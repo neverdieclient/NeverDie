@@ -280,7 +280,10 @@
  <script src="config.js"></script>
  <script src="script.js"></script>
 <script>
+let activeTab = null;
+
 function showTab(tab) {
+  activeTab = tab;
   const content = document.getElementById('profileContent');
   const settings = document.getElementById('profileSettings');
   const packs = document.getElementById('profilePacks');
@@ -444,13 +447,11 @@ function renderProfilePage() {
     guest.classList.remove('tab-hidden');
     return;
   }
-  // Если уже открыты паки или настройки — не выкидывать на аккаунт (напр. при смене языка)
-  const packsEl = document.getElementById('profilePacks');
-  const setEl = document.getElementById('profileSettings');
-  const packsActive = packsEl && !packsEl.classList.contains('tab-hidden');
-  const setActive = setEl && !setEl.classList.contains('tab-hidden');
-  if (packsActive) { showTab('packs'); buildPacks(); }
-  else if (setActive) { showTab('settings'); }
+  // Если уже открыты паки или настройки — не выкидывать на аккаунт (напр. при смене языка).
+  // Активную вкладку берём из activeTab: проверять наличие класса tab-hidden нельзя,
+  // потому что при первой загрузке этого класса ещё ни на одной панели нет.
+  if (activeTab === 'packs') { showTab('packs'); buildPacks(); }
+  else if (activeTab === 'settings') { showTab('settings'); }
   else { showTab('account'); }
   guest.style.display = 'none';
   content.style.display = '';
@@ -492,10 +493,10 @@ function ppLogout() {
 
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
+    // Дефолт — вкладка «Аккаунт», если только не открыт прямой адрес #packs
+    if (location.hash === '#packs' && getSession()) activeTab = 'packs';
     renderProfilePage();
-    buildPacks();
-    // Поддержка прямой ссылки profile.html#packs
-    if (location.hash === '#packs' && getSession()) showTab('packs');
+    if (activeTab === 'packs') buildPacks();
   }, 0);
 });
 </script>
